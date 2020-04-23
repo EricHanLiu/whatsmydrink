@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>What's My Drink</title>
+    <link rel="stylesheet" href="bulma/css/bulma.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Rock+Salt&display=swap" rel="stylesheet">
+    <script src="https://kit.fontawesome.com/17277e29e1.js" crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/jquery-3.5.0.min.js"
+            integrity="sha256-xNzN2a4ltkB44Mc/Jz3pT4iU1cmeR0FkXs4pru/JxaQ="
+            crossorigin="anonymous"></script>
+
+    <style>
+        body {
+            font-family: 'Rock Salt', cursive;
+        }
+    </style>
+</head>
+<body>
+<div class="hero is-fullheight is-light">
+    <div class="hero-body">
+        <div class="container">
+            <div class="columns is-vcentered">
+                <div class="column is-9 has-text-centered">
+                    <div class="title is-2">
+                        WHAT'S YOUR DRINK?
+                    </div>
+                    <form id="drink_form">
+                        <div class="field has-addons has-addons-centered" style="margin-top: 2em;">
+                            <div class="control">
+                                <input class="input is-primary is-large" type="text">
+                            </div>
+                            <div class="control">
+                                <button class="button is-large is-danger" type="submit">
+                                    <div class="icon">
+                                        <i class="fas fa-cocktail"></i>
+                                    </div>
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="column is-3">
+                    <div class="content">
+                        <ol style="font-size: 1.5em;">
+                            <li>
+                                Enter your go-to drink
+                            </li>
+                            <li>
+                                Scroll down and screenshot the image
+                            </li>
+                            <li>
+                                Tag your friends so they can give theirs
+                            </li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="hero is-fullheight is-black" style="background-image: url('bernie.jpg'); background-size: cover; background-position: 50% 50%;">
+    <div class="hero-head">
+        <div class="level">
+            <div class="level-left">
+            </div>
+            <div class="level-right">
+                <p style="font-size: 1.5em; margin: 0.5em;">
+                    whatsmydrink.github.io
+                </p>
+            </div>
+        </div>
+    </div>
+    <div class="hero-body">
+
+    </div>
+</div>
+</body>
+
+<script>
+    $('#drink_form').submit((e) => {
+        e.preventDefault();
+        console.log('submitted');
+    });
+</script>
+</html>
