@@ -197,11 +197,6 @@
                                 $drinkHero.removeClass('is-hidden');
                                 $drinkHero[0].scrollIntoView({behavior: 'smooth'});
                                 $drinkTitle.text(drink.strDrink);
-
-                                // hide intro
-                                setTimeout(() => {
-                                    $introHero.addClass('is-hidden');
-                                }, 1000);
                             });
                     })
             }
@@ -209,8 +204,7 @@
     }
 
     $newDrinkButton.click(() => {
-        $introHero.removeClass('is-hidden');
-        $drinkHero.addClass('is-hidden');
+        $introHero[0].scrollIntoView({behavior: 'smooth'});
     });
 </script>
 </html>
