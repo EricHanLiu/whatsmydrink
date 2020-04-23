@@ -14,11 +14,14 @@
             crossorigin="anonymous"></script>
     <link rel="shortcut icon" type="image/png" href="icon.png"/>
     <style>
+        html {
+            scroll-behavior: smooth;
+        }
+        
         body {
             font-family: 'Rock Salt', cursive;
             width: 100%;
             overflow-x: hidden;
-            scroll-behavior: smooth;
         }
 
         #drink_image {
@@ -209,9 +212,10 @@
 
     $newDrinkButton.click(() => {
         $introHero.removeClass('is-hidden');
+        $(document).scrollTop(0);
         setTimeout(() => {
-            $introHero[0].scrollIntoView({behavior: 'smooth'});
-        }, 300);
+            $drinkHero.addClass('is-hidden');
+        }, 1000);
     });
 </script>
 </html>
