@@ -6,7 +6,9 @@
     <title>What's My Drink</title>
     <link rel="stylesheet" href="bulma/css/bulma.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Rock+Salt&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" rel="stylesheet">
     <script src="https://kit.fontawesome.com/17277e29e1.js" crossorigin="anonymous"></script>
+    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.5.0.min.js"
             integrity="sha256-xNzN2a4ltkB44Mc/Jz3pT4iU1cmeR0FkXs4pru/JxaQ="
             crossorigin="anonymous"></script>
@@ -16,6 +18,13 @@
             font-family: 'Rock Salt', cursive;
             width: 100%;
             overflow-x: hidden;
+            scroll-behavior: smooth;
+        }
+
+        #drink_image {
+            border-radius: 100%;
+            border: 1px solid black;
+            box-shadow: 0 0 0 3px hsl(0, 0%, 100%), 0 0 0 6px hsl(0, 0%, 90%);
         }
     </style>
 </head>
@@ -31,7 +40,7 @@
                     <form id="drink_form">
                         <div class="field has-addons has-addons-centered" style="margin-top: 2em;">
                             <div class="control">
-                                <input class="input is-primary is-large" type="text">
+                                <input class="input is-primary is-large" type="text" id="drink_input">
                             </div>
                             <div class="control">
                                 <button class="button is-large is-danger" type="submit">
@@ -50,10 +59,10 @@
                                 Enter your go-to drink
                             </li>
                             <li>
-                                Scroll down and screenshot the image
+                                Screenshot and share
                             </li>
                             <li>
-                                Tag your friends so they can give theirs
+                                Tag your friends so they can share theirs
                             </li>
                         </ol>
                     </div>
@@ -65,17 +74,116 @@
         </div>
     </div>
 </div>
-<div class="hero is-fullheight is-light is-hidden">
-    <div class="hero-body">
-
+<div class="hero is-fullheight is-light is-hidden" id="drink_hero">
+    <div class="hero-head">
+        <div class="container">
+            <div class="section">
+                <div class="title has-text-centered" id="drink_title"></div>
+            </div>
+        </div>
+    </div>
+    <div class="hero-body has-text-centered-mobile">
+        <div class="container">
+            <div class="columns is-vcentered">
+                <div class="column is-6 has-text-right-desktop">
+                    <img id="drink_image">
+                </div>
+                <div class="column is-6">
+                    <div class="content">
+                        <div id="ingredients_list"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="hero-foot has-text-centered">
+        <div class="container">
+            <div class="section">
+                whatsmydrink.github.io
+            </div>
+        </div>
     </div>
 </div>
 </body>
 
 <script>
-    $('#drink_form').submit((e) => {
-        e.preventDefault();
-        console.log('submitted');
+    $(document).ready(() => {
+        toastr.options = {
+            'positionClass': 'toast-top-full-width',
+            'preventDuplicates': true
+        }
     });
+
+    let $drinkForm = $('#drink_form');
+    let $drinkHero = $('#drink_hero');
+    let $drinkTitle = $('#drink_title');
+    let $drinkImage = $('#drink_image');
+    let $ingredList = $('#ingredients_list');
+
+    $drinkForm.submit(function (e) {
+        e.preventDefault();
+        let val = $('#drink_input').val().trim().toLowerCase();
+
+        if (!val) {
+            toastr.error('You didn\'t enter a drink!');
+            return;
+        }
+
+        searchForDrink(val);
+    });
+
+    function searchForDrink(query) {
+        return fetch('https://www.thecocktaildb.com/api/json/v1/1/search.php?s=' + query)
+            .then(response => response.json())
+            .then(data => {
+                let drinks = data.drinks;
+                if (drinks === null) {
+                    return null;
+                }
+                return drinks[0];
+            })
+            .then(drink => {
+                if (drink === null) {
+                    toastr.error('Could not find your drink');
+                    $drinkHero.addClass('is-hidden');
+                } else {
+                    // show and populate hero
+                    $drinkHero.removeClass('is-hidden');
+                    $drinkHero[0].scrollIntoView({behavior: 'smooth'});
+                    $drinkTitle.text(drink.strDrink);
+
+                    // ingredient fetching
+                    let ingredients = [];
+                    let measures = [];
+                    for (let prop of Object.keys(drink)) {
+                        if (prop.includes('strIngredient') && drink[prop]) {
+                            ingredients.push(drink[prop]);
+                        }
+                        if (prop.includes('strMeasure') && drink[prop]) {
+                            measures.push(drink[prop])
+                        }
+                    }
+
+                    // display
+                    let list = '';
+                    for (let i = 0; i < ingredients.length; i++) {
+                        let m = measures[i];
+                        if (!m) {
+                            m = '';
+                        }
+                        list += '<p>' + m + ingredients[i] + '</p>';
+                    }
+                    $ingredList.html(list);
+                    console.log(drink);
+
+                    let thumbLink = drink.strDrinkThumb + '/preview';
+                    fetch(thumbLink)
+                        .then(response => response.blob())
+                        .then(img => {
+                            $drinkImage[0].src = URL.createObjectURL(img);
+                        });
+                }
+            });
+    }
 </script>
 </html>
