@@ -38,6 +38,7 @@
                         WHAT'S YOUR DRINK?
                     </div>
                     <form id="drink_form">
+                        <label class="label">enter an ingredient or drink name</label>
                         <div class="field has-addons has-addons-centered" style="margin-top: 2em;">
                             <div class="control">
                                 <input class="input is-primary is-large" type="text" id="drink_input">
@@ -71,7 +72,7 @@
         <div class="container">
             <div class="columns is-vcentered">
                 <div class="column is-6 has-text-right-desktop">
-                    <img id="drink_image">
+                    <img id="drink_image" style="height: 25vh;">
                 </div>
                 <div class="column is-6">
                     <div class="content">
@@ -117,58 +118,87 @@
         searchForDrink(val);
     });
 
-    function searchForDrink(query) {
+    function searchForDrinkName(query) {
         return fetch('https://www.thecocktaildb.com/api/json/v1/1/search.php?s=' + query)
             .then(response => response.json())
             .then(data => {
                 let drinks = data.drinks;
                 if (drinks === null) {
-                    return null;
+                    return {'drinks': []};
                 }
-                return drinks[0];
-            })
-            .then(drink => {
-                if (drink === null) {
-                    toastr.error('Could not find your drink');
-                    $drinkHero.addClass('is-hidden');
-                } else {
-                    // show and populate hero
-                    $drinkHero.removeClass('is-hidden');
-                    $drinkHero[0].scrollIntoView({behavior: 'smooth'});
-                    $drinkTitle.text(drink.strDrink);
-
-                    // ingredient fetching
-                    let ingredients = [];
-                    let measures = [];
-                    for (let prop of Object.keys(drink)) {
-                        if (prop.includes('strIngredient') && drink[prop]) {
-                            ingredients.push(drink[prop]);
-                        }
-                        if (prop.includes('strMeasure') && drink[prop]) {
-                            measures.push(drink[prop])
-                        }
-                    }
-
-                    // display
-                    let list = '';
-                    for (let i = 0; i < ingredients.length; i++) {
-                        let m = measures[i];
-                        if (!m) {
-                            m = '';
-                        }
-                        list += '<p>' + m + ingredients[i] + '</p>';
-                    }
-                    $ingredList.html(list);
-                    console.log(drink);
-
-                    let thumbLink = drink.strDrinkThumb + '/preview';
-                    fetch(thumbLink)
-                        .then(response => response.blob())
-                        .then(img => {
-                            $drinkImage[0].src = URL.createObjectURL(img);
-                        });
-                }
+                return {'drinks': drinks};
             });
+    }
+
+    function searchForDrinkIngredient(query) {
+        return fetch('https://www.thecocktaildb.com/api/json/v1/1/filter.php?i=' + query)
+            .then(response => response.text())  // text bc json throws error if no result
+            .then(data => {
+                if (data) {
+                    return JSON.parse(data);
+                }
+                return {'drinks': []}
+            });
+    }
+
+    // todo: change these nested promises, seems janky
+    function searchForDrink(query) {
+        Promise.all([
+            searchForDrinkName(query),
+            searchForDrinkIngredient(query)
+        ]).then(data => {
+            let drinks = data[0].drinks.concat(data[1].drinks);
+
+            if (drinks.length === 0) {
+                toastr.error('Could not find a drink for you');
+                $drinkHero.addClass('is-hidden');
+            } else {
+                let drinkID = drinks[Math.floor(Math.random() * drinks.length)].idDrink;  // get random drink
+
+                // need separate search of ID, since ingredient search doesn't return full drink info
+                return fetch('https://www.thecocktaildb.com/api/json/v1/1/lookup.php?i=' + drinkID)
+                    .then(response => response.json())
+                    .then(data => {
+                        let drink = data.drinks[0];
+
+                        // ingredient fetching
+                        let ingredients = [];
+                        let measures = [];
+                        for (let prop of Object.keys(drink)) {
+                            if (prop.includes('strIngredient') && drink[prop]) {
+                                ingredients.push(drink[prop]);
+                            }
+                            if (prop.includes('strMeasure') && drink[prop]) {
+                                measures.push(drink[prop])
+                            }
+                        }
+
+                        // display
+                        let list = '';
+                        for (let i = 0; i < ingredients.length; i++) {
+                            let m = measures[i];
+                            if (!m) {
+                                m = '';
+                            }
+                            list += '<p>' + m + ' ' + ingredients[i] + '</p>';
+                        }
+
+                        // get image of drink
+                        let imgLink = drink.strDrinkThumb;
+                        fetch(imgLink)
+                            .then(response => response.blob())
+                            .then(img => {
+                                $drinkImage[0].src = URL.createObjectURL(img);
+
+                                // show and populate hero
+                                $ingredList.html(list);
+                                $drinkHero.removeClass('is-hidden');
+                                $drinkHero[0].scrollIntoView({behavior: 'smooth'});
+                                $drinkTitle.text(drink.strDrink);
+                            });
+                    })
+            }
+        });
     }
 </script>
 </html>
