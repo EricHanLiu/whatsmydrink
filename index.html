@@ -29,7 +29,7 @@
     </style>
 </head>
 <body>
-<div class="hero is-fullheight is-light">
+<div class="hero is-fullheight is-light" id="intro_hero">
     <div class="hero-body">
         <div class="container">
             <div class="columns is-vcentered">
@@ -85,7 +85,7 @@
     <div class="hero-foot has-text-centered">
         <div class="container">
             <div class="section">
-                whatsmydrink.github.io
+                <p class="button is-primary" id="new_drink_button">New Drink</p>
             </div>
         </div>
     </div>
@@ -100,11 +100,13 @@
         }
     });
 
+    let $introHero = $('#intro_hero');
     let $drinkForm = $('#drink_form');
     let $drinkHero = $('#drink_hero');
     let $drinkTitle = $('#drink_title');
     let $drinkImage = $('#drink_image');
     let $ingredList = $('#ingredients_list');
+    let $newDrinkButton = $('#new_drink_button');
 
     $drinkForm.submit(function (e) {
         e.preventDefault();
@@ -195,10 +197,20 @@
                                 $drinkHero.removeClass('is-hidden');
                                 $drinkHero[0].scrollIntoView({behavior: 'smooth'});
                                 $drinkTitle.text(drink.strDrink);
+
+                                // hide intro
+                                setTimeout(() => {
+                                    $introHero.addClass('is-hidden');
+                                }, 1000);
                             });
                     })
             }
         });
     }
+
+    $newDrinkButton.click(() => {
+        $introHero.removeClass('is-hidden');
+        $drinkHero.addClass('is-hidden');
+    });
 </script>
 </html>
