@@ -88,7 +88,7 @@
     <div class="hero-foot has-text-centered">
         <div class="container">
             <div class="section">
-                <p class="button is-primary" id="new_drink_button">New Drink</p>
+                <p class="button is-danger" id="new_drink_button">New Drink</p>
             </div>
         </div>
     </div>
@@ -200,10 +200,6 @@
                                 $drinkHero.removeClass('is-hidden');
                                 $drinkHero[0].scrollIntoView({behavior: 'smooth'});
                                 $drinkTitle.text(drink.strDrink);
-                                
-                                setTimeout(() => {
-                                    $introHero.addClass('is-hidden');
-                                }, 1000);
                             });
                     })
             }
@@ -211,8 +207,7 @@
     }
 
     $newDrinkButton.click(() => {
-        $introHero.removeClass('is-hidden');
-        $drinkHero.addClass('is-hidden');
+        $(document).scrollTop(0);
     });
 </script>
 </html>
