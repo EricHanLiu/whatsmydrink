@@ -5,7 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>What's My Drink</title>
     <link rel="stylesheet" href="bulma/css/bulma.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Rock+Salt&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Readex+Pro:wght@300&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" rel="stylesheet">
     <script src="https://kit.fontawesome.com/17277e29e1.js" crossorigin="anonymous"></script>
     <script defer src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
@@ -19,7 +21,7 @@
         }
         
         body {
-            font-family: 'Rock Salt', cursive;
+            font-family: 'Readex Pro', sans-serif;
             width: 100%;
             overflow-x: hidden;
         }
@@ -38,10 +40,10 @@
             <div class="columns is-vcentered">
                 <div class="column is-8 has-text-centered">
                     <div class="title is-2">
-                        WHAT'S YOUR DRINK?
+                        what's your drink?
                     </div>
                     <form id="drink_form">
-                        <label class="label">enter an ingredient or drink name</label>
+                        <label class="label">enter your ingredients, comma separated</label>
                         <div class="field has-addons has-addons-centered" style="margin-top: 2em;">
                             <div class="control">
                                 <input class="input is-primary is-large" type="text" id="drink_input">
@@ -88,7 +90,7 @@
     <div class="hero-foot has-text-centered">
         <div class="container">
             <div class="section">
-                <p class="button is-danger" id="new_drink_button">New Drink</p>
+                <p class="button is-primary" id="new_drink_button">New Drink</p>
             </div>
         </div>
     </div>
@@ -136,7 +138,7 @@
     }
 
     function searchForDrinkIngredient(query) {
-        return fetch('https://www.thecocktaildb.com/api/json/v1/1/filter.php?i=' + query)
+        return fetch('https://www.thecocktaildb.com/api/json/v1/1/filter.php?i=' + query.trim())
             .then(response => response.text())  // text bc json throws error if no result
             .then(data => {
                 if (data) {
@@ -146,16 +148,17 @@
             });
     }
 
-    // todo: change these nested promises, seems janky
     function searchForDrink(query) {
-        Promise.all([
-            searchForDrinkName(query),
-            searchForDrinkIngredient(query)
-        ]).then(data => {
-            let drinks = data[0].drinks.concat(data[1].drinks);
+        toastr.info('Mixing...');
+        Promise.all(
+            query.split(',').map(q => searchForDrinkIngredient(q))
+        ).then(data => {
+            let drinks = data.map(d => d.drinks).reduce((l1, l2) => l1.filter(d1 => l2.map(d2 => d2.idDrink).includes(d1.idDrink)));
+            console.log(drinks);
 
             if (drinks.length === 0) {
-                toastr.error('Could not find a drink for you');
+                toastr.clear();
+                toastr.warning('Couldn\'t find a drink for you');
                 $drinkHero.addClass('is-hidden');
             } else {
                 let drinkID = drinks[Math.floor(Math.random() * drinks.length)].idDrink;  // get random drink
@@ -201,12 +204,16 @@
                                 $drinkHero[0].scrollIntoView({behavior: 'smooth'});
                                 $drinkTitle.text(drink.strDrink);
                             });
+
+                        toastr.clear();
                     })
             }
         });
     }
 
     $newDrinkButton.click(() => {
+        $('#drink_input').val('');
+        $('#drink_input').focus();
         $(document).scrollTop(0);
     });
 </script>
